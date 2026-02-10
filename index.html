@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Performance Optimizer | Ultra</title>
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --bg-dark: #020617;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(30, 58, 138, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(30, 58, 138, 0.2) 0%, transparent 50%);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Prevents scrolling */
+        }
+
+        /* Compact Dashboard Wrapper */
+        .dashboard {
+            width: 95vw;
+            max-width: 1100px;
+            height: 90vh;
+            max-height: 700px;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            grid-template-rows: auto 1fr auto auto;
+            gap: 20px;
+            padding: 24px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Header Section */
+        header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--primary-blue);
+            color: var(--primary-blue);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        /* Sidebar Controls */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-group {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: #1e293b;
+            border-radius: 2px;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .action-btn {
+            margin-top: auto;
+            width: 100%;
+            padding: 20px;
+            border-radius: 16px;
+            border: none;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .action-btn.active {
+            background: linear-gradient(135deg, #ef4444, #991b1b);
+        }
+
+        /* Main Visualization Area */
+        .main-stage {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .viz-card {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .viz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 2;
+        }
+
+        .viz-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            font-weight: bold;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .metric-tile {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .metric-val {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+        }
+
+        .metric-label {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        /* Compact Console */
+        .console {
+            grid-column: 1 / -1;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            height: 50px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+
+        /* Footer Branding */
+        .footer {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 10px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .vz-link {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            padding: 6px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(59, 130, 246, 0.05);
+            transition: all 0.3s;
+        }
+
+        .vz-link:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 15px var(--accent-glow);
+            transform: scale(1.05);
+        }
+
+        .log-entry { margin-right: 20px; white-space: nowrap; }
+        .log-blue { color: var(--primary-blue); }
+
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <header>
+            <h1><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> OPTIMIZER ULTRA</h1>
+            <div id="status-tag" class="status-badge">Engine Ready</div>
+        </header>
+
+        <div class="sidebar">
+            <div class="control-group">
+                <div class="label-row">
+                    <span>ALLOCATION LOAD</span>
+                    <span id="load-val">50MB</span>
+                </div>
+                <input type="range" id="load-slider" min="10" max="250" value="50">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <span>PRIORITY LEVEL</span>
+                    <span style="color: var(--primary-blue)">SYSTEM CRITICAL</span>
+                </div>
+                <div style="font-size: 0.65rem; color: var(--text-dim); line-height: 1.4;">
+                    Force foreground thread dominance and stabilize I/O pipelines.
+                </div>
+            </div>
+
+            <button id="toggleBtn" class="action-btn">ACTIVATE ENGINE</button>
+        </div>
+
+        <div class="main-stage">
+            <div class="viz-card">
+                <div class="viz-header">
+                    <div>
+                        <div class="viz-label">THROUGHPUT GRAPH</div>
+                        <div style="font-size: 1.2rem; font-weight: 800;" id="activity-pct">0.0%</div>
+                    </div>
+                </div>
+                <canvas id="viz-canvas"></canvas>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-tile">
+                    <span class="metric-val" id="m-core">IDLE</span>
+                    <span class="metric-label">CPU CORE</span>
+                </div>
+                <div class="metric-tile">
+                    <span class="metric-val" id="m-io">STABLE</span>
+                    <span class="metric-label">I/O STATE</span>
+                </div>
+                <div class="metric-tile">
+                    <span class="metric-val" id="m-ram">LOW</span>
+                    <span class="metric-label">RAM CACHE</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="console" id="log-strip">
+            <div class="log-entry">System idle. Awaiting user initialization...</div>
+        </div>
+
+        <div class="footer">
+            <a href="https://discord.com/invite/3FKbhae6hF" target="_blank" class="vz-link">
+                PART OF THE VZ COLLECTION
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let active = false;
+        let db = null;
+        let intensity = 50;
+        let dataBlock = null;
+        let ramHold = [];
+        const DB_NAME = 'UltraEngine_Core';
+        const OBJ_STORE = 'io_buffer';
+
+        // Elements
+        const toggleBtn = document.getElementById('toggleBtn');
+        const loadSlider = document.getElementById('load-slider');
+        const loadVal = document.getElementById('load-val');
+        const statusTag = document.getElementById('status-tag');
+        const logStrip = document.getElementById('log-strip');
+        const activityPct = document.getElementById('activity-pct');
+        const mCore = document.getElementById('m-core');
+        const mIO = document.getElementById('m-io');
+        const mRam = document.getElementById('m-ram');
+        const canvas = document.getElementById('viz-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Init DB
+        const dbReq = indexedDB.open(DB_NAME, 1);
+        dbReq.onupgradeneeded = e => e.target.result.createObjectStore(OBJ_STORE);
+        dbReq.onsuccess = e => { 
+            db = e.target.result;
+            addLog("Engine DB Handshake Complete");
+        };
+
+        function addLog(msg) {
+            const entry = document.createElement('span');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-blue">#</span> ${msg}`;
+            logStrip.prepend(entry);
+        }
+
+        // The Engine
+        async function engineStep() {
+            if (!active || !db) return;
+
+            try {
+                const tx = db.transaction(OBJ_STORE, 'readwrite');
+                const store = tx.objectStore(OBJ_STORE);
+                
+                await new Promise(r => {
+                    store.put(dataBlock, 'sys_vol_1').onsuccess = () => {
+                        store.delete('sys_vol_1').onsuccess = r;
+                    };
+                });
+
+                // Memory lock
+                if (ramHold.length > 3) ramHold.shift();
+                ramHold.push(new Uint8Array(dataBlock.length / 5));
+
+                if (active) requestAnimationFrame(engineStep);
+            } catch (e) {
+                setTimeout(engineStep, 100);
+            }
+        }
+
+        // Visuals
+        let pts = Array(60).fill(10);
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 4;
+            ctx.lineJoin = 'round';
+
+            const w = canvas.width / (pts.length - 1);
+            for (let i = 0; i < pts.length; i++) {
+                const x = i * w;
+                const h = active ? pts[i] : pts[i] * 0.9;
+                const y = canvas.height - (h / 100 * (canvas.height - 40)) - 20;
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+
+                if (active) {
+                    if (i === pts.length - 1) pts[i] = 40 + Math.random() * 50;
+                    else pts[i] = pts[i + 1];
+                } else {
+                    pts[i] *= 0.95;
+                }
+            }
+            ctx.stroke();
+
+            // Glow fill
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(0, canvas.height);
+            const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            g.addColorStop(0, 'rgba(59, 130, 246, 0.15)');
+            g.addColorStop(1, 'rgba(59, 130, 246, 0)');
+            ctx.fillStyle = g;
+            ctx.fill();
+
+            if (active) {
+                const p = (40 + Math.random() * 58).toFixed(1);
+                activityPct.textContent = p + "%";
+            } else {
+                activityPct.textContent = "0.0%";
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        loadSlider.oninput = e => {
+            intensity = e.target.value;
+            loadVal.textContent = intensity + "MB";
+        };
+
+        toggleBtn.onclick = () => {
+            active = !active;
+            if (active) {
+                dataBlock = new Uint8Array(1024 * 1024 * intensity).fill(Math.random() * 255);
+                toggleBtn.textContent = "DEACTIVATE ENGINE";
+                toggleBtn.classList.add('active');
+                statusTag.textContent = "Optimizing...";
+                statusTag.style.borderColor = "#3b82f6";
+                mCore.textContent = "BUSY";
+                mIO.textContent = "ACTIVE";
+                mRam.textContent = "HIGH";
+                addLog(`Thread Lock Initialized: ${intensity}MB`);
+                engineStep();
+            } else {
+                toggleBtn.textContent = "ACTIVATE ENGINE";
+                toggleBtn.classList.remove('active');
+                statusTag.textContent = "Engine Ready";
+                mCore.textContent = "IDLE";
+                mIO.textContent = "STABLE";
+                mRam.textContent = "LOW";
+                ramHold = [];
+                dataBlock = null;
+                addLog("Optimization Suspended.");
+            }
+        };
+
+        function resize() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        window.onresize = resize;
+        window.onload = () => {
+            resize();
+            animate();
+        };
+    </script>
+</body>
+</html>
