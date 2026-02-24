@@ -3,599 +3,387 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>exFreeze | System Performance Optimizer</title>
+    <title>exFreeze UES | Ultra Efficient Smart Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://js.puter.com/v2/"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary-blue: #60a5fa;
-            --accent-glow: rgba(96, 165, 250, 0.4);
-            --bg-dark: #0a0a0a;
-            --card-bg: rgba(20, 20, 20, 0.8);
-            --border: rgba(255, 255, 255, 0.08);
-            --text-main: #ffffff;
-            --text-dim: #888888;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
 
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
+        :root {
+            --emerald-glow: 0 0 20px rgba(52, 211, 153, 0.2);
+            --bg-dark: #050505;
+            --panel-dark: #0a0a0a;
+            --accent: #10b981;
         }
 
         body {
-            background: var(--bg-dark);
-            background-image: 
-                radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0a0a0a 100%);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden; 
-        }
-
-        /* Loading Screen Styles */
-        #loading-screen {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-dark);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.8s ease;
-        }
-
-        .loader-title {
-            font-size: 2.5rem;
-            font-weight: 200;
-            letter-spacing: 0.5em;
-            text-transform: uppercase;
-            margin-bottom: 40px;
-            color: var(--text-main);
-            opacity: 0.8;
-        }
-
-        .loader-bar-bg {
-            width: 300px;
-            height: 2px;
-            background: rgba(255,255,255,0.05);
-            position: relative;
-        }
-
-        .loader-bar-fill {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 0%;
-            background: var(--primary-blue);
-            box-shadow: 0 0 20px var(--primary-blue);
-            transition: width 3s cubic-bezier(0.65, 0, 0.35, 1);
-        }
-
-        /* Warning Overlay */
-        #warning-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 90;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 40px;
-        }
-
-        .warning-box {
-            max-width: 500px;
-        }
-
-        .warning-title {
-            color: #fbbf24;
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            letter-spacing: 0.1em;
-        }
-
-        .warning-text {
-            color: var(--text-main);
-            line-height: 1.6;
-            margin-bottom: 30px;
-            font-size: 0.95rem;
-        }
-
-        .warning-btn {
-            padding: 12px 30px;
-            background: #fff;
-            color: #000;
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
-
-        /* Dashboard Wrapper */
-        .dashboard {
-            width: 90vw;
-            max-width: 1200px;
-            height: 80vh;
-            max-height: 800px;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            padding: 0;
-            background: var(--card-bg);
-            backdrop-filter: blur(30px);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.9);
-            opacity: 0;
-            transform: scale(0.98);
-            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Inter', sans-serif;
             overflow: hidden;
         }
 
-        .dashboard.visible {
-            opacity: 1;
-            transform: scale(1);
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(1000%); }
         }
 
-        .sidebar {
-            background: rgba(0, 0, 0, 0.3);
-            border-right: 1px solid var(--border);
-            padding: 40px;
+        .scanline-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent, rgba(52, 211, 153, 0.05), transparent);
+            height: 10%;
+            width: 100%;
+            pointer-events: none;
+            animation: scanline 8s linear infinite;
+        }
+
+        #advisory-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
         }
 
-        .brand-header {
-            margin-bottom: 60px;
+        .btn-pulse {
+            animation: btn-glow 2s infinite;
+        }
+        @keyframes btn-glow {
+            0% { box-shadow: 0 0 0px rgba(16, 185, 129, 0); }
+            50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.6); }
+            100% { box-shadow: 0 0 0px rgba(16, 185, 129, 0); }
         }
 
-        .brand-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            color: var(--text-main);
-        }
-
-        .brand-sub {
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-
-        .control-section {
-            margin-bottom: 40px;
-        }
-
-        .control-label {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            color: var(--text-dim);
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        .value-display {
-            font-size: 2rem;
-            font-weight: 300;
-            margin-bottom: 10px;
-            color: var(--primary-blue);
-        }
-
-        .instruction-hint {
-            font-size: 0.7rem;
-            color: #fbbf24;
-            margin-top: 10px;
-            font-style: italic;
+        .ai-active-glow {
+            box-shadow: inset 0 0 50px rgba(16, 185, 129, 0.05);
         }
 
         input[type="range"] {
-            width: 100%;
-            height: 2px;
-            background: #333;
             appearance: none;
-            cursor: pointer;
-            outline: none;
+            background: #1f2937;
+            height: 4px;
+            border-radius: 2px;
+            pointer-events: none; /* AI Controls this now */
+            opacity: 0.5;
         }
-
         input[type="range"]::-webkit-slider-thumb {
             appearance: none;
-            width: 12px;
-            height: 12px;
-            background: #fff;
+            width: 14px;
+            height: 14px;
+            background: var(--accent);
             border-radius: 50%;
-            transition: 0.2s;
         }
-
-        input[type="range"]:hover::-webkit-slider-thumb {
-            transform: scale(1.3);
-            background: var(--primary-blue);
-        }
-
-        .main-view {
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-        }
-
-        .viz-container {
-            flex: 1;
-            position: relative;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            opacity: 0.6;
-        }
-
-        .stats-overlay {
-            position: relative;
-            z-index: 10;
-            text-align: center;
-        }
-
-        .big-pct {
-            font-size: 8rem;
-            font-weight: 100;
-            letter-spacing: -0.05em;
-            line-height: 1;
-        }
-
-        .pct-label {
-            font-size: 0.8rem;
-            letter-spacing: 0.4em;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            margin-top: 10px;
-        }
-
-        .bottom-bar {
-            height: 100px;
-            border-top: 1px solid var(--border);
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            align-items: center;
-        }
-
-        .stat-item {
-            text-align: center;
-            border-right: 1px solid var(--border);
-        }
-
-        .stat-item:last-child { border-right: none; }
-
-        .stat-val {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .stat-lab {
-            font-size: 0.6rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-
-        .action-area {
-            margin-top: auto;
-        }
-
-        .btn-main {
-            width: 100%;
-            padding: 24px;
-            background: transparent;
-            border: 1px solid var(--primary-blue);
-            color: var(--primary-blue);
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.4s;
-        }
-
-        .btn-main:hover {
-            background: var(--primary-blue);
-            color: #000;
-            box-shadow: 0 0 30px var(--accent-glow);
-        }
-
-        .btn-main.active {
-            border-color: #ef4444;
-            color: #ef4444;
-        }
-
-        .btn-main.active:hover {
-            background: #ef4444;
-            color: #fff;
-        }
-
-        .system-log {
-            padding: 15px 40px;
-            font-size: 0.65rem;
-            color: var(--text-dim);
-            background: #000;
-            border-top: 1px solid var(--border);
-            letter-spacing: 0.05em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .vz-link-container {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .vz-link {
-            color: var(--primary-blue);
-            text-decoration: none;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            padding: 8px 16px;
-            border: 1px solid var(--border);
-            transition: 0.3s;
-        }
-
-        .vz-link:hover {
-            background: rgba(96, 165, 250, 0.1);
-            border-color: var(--primary-blue);
-        }
-
     </style>
 </head>
-<body>
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <!-- Startup Cutscene -->
-    <div id="loading-screen">
-        <div class="loader-title">EXFREEZE</div>
-        <div class="loader-bar-bg">
-            <div id="loader-fill" class="loader-bar-fill"></div>
-        </div>
-    </div>
-
-    <!-- Usage Warning -->
-    <div id="warning-overlay">
-        <div class="warning-box">
-            <div class="warning-title">SYSTEM NOTICE</div>
-            <p class="warning-text">
-                Optimization requires significant background resources. 
-                This tab <strong>will</strong> slow down and may become unresponsive — this is normal and indicates the engine is working.
+    <!-- ADVISORY SCREEN -->
+    <div id="advisory-overlay">
+        <div class="max-w-md bg-zinc-900 border border-white/10 p-10 rounded-[2.5rem] text-center shadow-2xl">
+            <i class="fa-solid fa-brain text-emerald-500 text-4xl mb-6"></i>
+            <h2 class="text-2xl font-black mb-4 uppercase tracking-tight">UES Initialization</h2>
+            <p class="text-zinc-400 text-sm leading-relaxed mb-8">
+                The <span class="text-emerald-400">exFreeze Ultra Efficient Smart</span> engine requires cloud-assisted logic to balance resource allocation. <span class="text-white font-bold">Sign in to Puter</span> to activate.
             </p>
-            <button class="warning-btn" onclick="closeWarning()">Enter Dashboard</button>
+            <button id="start-init-btn" class="w-full py-4 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:bg-emerald-400 transition-colors">
+                Initialize UES AI
+            </button>
         </div>
     </div>
 
-    <div class="dashboard" id="main-dashboard">
-        <div class="sidebar">
-            <div class="brand-header">
-                <div class="brand-name">EXFREEZE</div>
-                <div class="brand-sub">System Optimization</div>
+    <div class="w-full max-w-7xl h-[90vh] bg-[#0a0a0a] rounded-[2.5rem] border border-white/5 overflow-hidden flex shadow-2xl relative">
+        <div class="scanline-overlay"></div>
+
+        <!-- SIDEBAR: AI COGNITION -->
+        <aside class="w-80 border-r border-white/5 bg-black/40 p-6 flex flex-col z-10">
+            <div class="flex items-center gap-3 mb-10">
+                <div id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-red-500 transition-colors duration-500"></div>
+                <h2 class="text-[10px] font-bold tracking-[0.3em] text-gray-500 uppercase">UES_Thinking_Stream</h2>
             </div>
 
-            <div class="control-section">
-                <span class="control-label">Allocation Buffer</span>
-                <div class="value-display" id="load-val">50MB</div>
-                <input type="range" id="load-slider" min="10" max="500" value="50">
-                <div class="instruction-hint">Tip: Drag to 500MB for best results</div>
+            <div id="telemetry-stream" class="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar text-[12px] leading-relaxed">
+                <div class="text-zinc-600 italic">Awaiting AI handshake...</div>
             </div>
 
-            <div class="control-section">
-                <span class="control-label">Engine State</span>
-                <div id="status-text" style="font-size: 0.8rem; color: var(--text-dim);">Standby Mode</div>
+            <div class="mt-6 pt-6 border-t border-white/5">
+                <div class="flex justify-between text-[9px] font-bold text-gray-500 uppercase mb-2">
+                    <span>Adaptive Load Balance</span>
+                    <span id="load-text">0%</span>
+                </div>
+                <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div id="load-bar" class="h-full bg-emerald-500 w-0 transition-all duration-700"></div>
+                </div>
             </div>
+        </aside>
 
-            <div class="action-area">
-                <button id="toggleBtn" class="btn-main">Initialize Engine</button>
-            </div>
+        <!-- MAIN PANEL -->
+        <main id="main-content" class="flex-1 flex flex-col p-10 relative overflow-hidden transition-colors duration-1000">
+            <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 blur-[120px] rounded-full -mr-64 -mt-64"></div>
 
-            <div class="vz-link-container">
-                <a href="https://discord.com/invite/3FKbhae6hF" target="_blank" class="vz-link">
-                    APART OF THE VZ COLLECTION
-                </a>
-            </div>
-        </div>
+            <header class="flex justify-between items-start mb-8 z-10">
+                <div>
+                    <h1 class="text-5xl font-black tracking-tighter">exFreeze <span class="text-emerald-400 italic">UES</span></h1>
+                    <p class="text-gray-500 text-xs font-medium tracking-wide italic">Ultra Efficient & Smart Engine</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-[9px] font-bold text-emerald-400/50 uppercase tracking-widest">Logic Status</div>
+                    <div id="engine-status-text" class="text-xl font-light">OFFLINE</div>
+                </div>
+            </header>
 
-        <div class="main-view">
-            <div class="viz-container">
-                <canvas id="viz-canvas"></canvas>
-                <div class="stats-overlay">
-                    <div class="big-pct" id="activity-pct">00.0</div>
-                    <div class="pct-label">Optimization Flow</div>
+            <div class="flex-1 grid grid-cols-12 gap-8 z-10">
+                <!-- Control Panel -->
+                <div class="col-span-4 flex flex-col gap-6">
+                    <div class="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5">
+                        <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest block mb-4">Autonomous Allocation</span>
+                        <div id="p-val" class="text-4xl font-black mb-4">0<span class="text-lg text-zinc-600 font-light">MB</span></div>
+                        <input type="range" id="p-slider" min="100" max="4000" value="1000" class="w-full mb-4">
+                        <p class="text-[10px] text-zinc-500 leading-snug">
+                            The AI is constantly moving this target based on your CPU heat and latency to prevent freezing your own browser.
+                        </p>
+                    </div>
+
+                    <div class="p-8 rounded-[2rem] bg-zinc-900/50 border border-white/5">
+                        <h3 class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-4">UES Strategy</h3>
+                        <ul class="space-y-3 text-[11px] text-zinc-400 font-medium">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-emerald-500 text-[8px]"></i> Real-time Adaptive Leveling</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-snowflake text-emerald-500 text-[8px]"></i> Intelligent Extension Freezing</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-microchip text-emerald-500 text-[8px]"></i> Dynamic Hardware Balancing</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Main Display -->
+                <div class="col-span-8 flex flex-col p-10 rounded-[3rem] bg-white/[0.02] border border-white/5 relative items-center justify-center">
+                    <div id="visualizer-ring" class="w-56 h-56 rounded-full border border-white/5 flex items-center justify-center relative transition-transform duration-1000">
+                        <div class="absolute inset-0 rounded-full border-t-2 border-emerald-500/20 animate-spin" style="animation-duration: 3s;"></div>
+                        <div class="text-center">
+                            <div id="ues-score" class="text-7xl font-black tracking-tighter">--</div>
+                            <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] mt-2">Core Stability</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 w-full mt-10">
+                        <div class="p-4 rounded-2xl bg-black/40 border border-white/5 text-center">
+                            <div class="text-[8px] text-gray-500 font-bold uppercase mb-1">Heap State</div>
+                            <div id="heap-val" class="text-xl font-light mono">0.0<span class="text-xs">MB</span></div>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-black/40 border border-white/5 text-center">
+                            <div class="text-[8px] text-gray-500 font-bold uppercase mb-1">AI Thinking</div>
+                            <div id="thread-val" class="text-xl font-light mono">0%</div>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-black/40 border border-white/5 text-center">
+                            <div class="text-[8px] text-gray-500 font-bold uppercase mb-1">Cycle Latency</div>
+                            <div id="lat-val" class="text-xl font-light mono">0<span class="text-xs">ms</span></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="bottom-bar">
-                <div class="stat-item">
-                    <span class="stat-val" id="m-core">Standard</span>
-                    <span class="stat-lab">Thread Priority</span>
+            <footer class="mt-8 pt-6 border-t border-white/5 flex items-center justify-between z-10">
+                <div class="flex gap-8 text-[10px]">
+                    <div class="flex flex-col"><span class="text-gray-600 uppercase font-bold">Node</span><span id="net-stat">Scanning...</span></div>
+                    <div class="flex flex-col"><span class="text-gray-600 uppercase font-bold">Thread Count</span><span id="cpu-stat">--</span></div>
+                    <div class="flex flex-col"><span class="text-gray-600 uppercase font-bold">Engine</span><span>v4.0 UES</span></div>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-val" id="m-io">Idle</span>
-                    <span class="stat-lab">I/O Throughput</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-val" id="m-ram">Passive</span>
-                    <span class="stat-lab">Memory Cache</span>
-                </div>
-            </div>
 
-            <div class="system-log" id="sys-log">
-                Kernel: Ready for user command...
-            </div>
-        </div>
+                <button id="toggle-btn" class="btn-pulse group relative overflow-hidden px-14 py-5 rounded-2xl bg-emerald-500 text-black font-black text-xs tracking-[0.2em] uppercase transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                    <span id="btn-text">Boot UES AI</span>
+                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                </button>
+            </footer>
+        </main>
     </div>
 
     <script>
-        let active = false;
-        let db = null;
-        let intensity = 50;
-        let dataBlock = null;
-        let ramHold = [];
-        const DB_NAME = 'exFreeze_Core_v5';
-        const OBJ_STORE = 'io_buffer';
+        let running = false;
+        let power = 1000;
+        let cycle = [];
+        let engineInterval;
+        let baseStability = 98.4;
+        let systemStats = {};
+        let currentLatency = 0;
 
-        const toggleBtn = document.getElementById('toggleBtn');
-        const loadSlider = document.getElementById('load-slider');
-        const loadVal = document.getElementById('load-val');
-        const statusText = document.getElementById('status-text');
-        const activityPct = document.getElementById('activity-pct');
-        const sysLog = document.getElementById('sys-log');
-        const mCore = document.getElementById('m-core');
-        const mIO = document.getElementById('m-io');
-        const mRam = document.getElementById('m-ram');
-        const canvas = document.getElementById('viz-canvas');
-        const ctx = canvas.getContext('2d');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const btnText = document.getElementById('btn-text');
+        const thoughtStream = document.getElementById('telemetry-stream');
+        const statusInd = document.getElementById('status-indicator');
+        const engineStatus = document.getElementById('engine-status-text');
+        const heapVal = document.getElementById('heap-val');
+        const latVal = document.getElementById('lat-val');
+        const uesScore = document.getElementById('ues-score');
+        const slider = document.getElementById('p-slider');
+        const pValDisplay = document.getElementById('p-val');
+        const loadBar = document.getElementById('load-bar');
+        const loadText = document.getElementById('load-text');
+        const mainContent = document.getElementById('main-content');
 
-        function startLoading() {
-            const bar = document.getElementById('loader-fill');
-            const screen = document.getElementById('loading-screen');
-            const warning = document.getElementById('warning-overlay');
+        function addThought(text, isAi = true) {
+            const el = document.createElement('div');
+            el.className = isAi ? 'text-white border-l-2 border-emerald-500 pl-3 py-1 animate-in fade-in slide-in-from-left-2 mb-2' : 'text-zinc-500 text-[10px] uppercase font-bold tracking-widest mb-1 mt-4';
+            el.innerText = text;
+            thoughtStream.prepend(el);
+            if (thoughtStream.children.length > 50) thoughtStream.lastChild.remove();
+        }
+
+        async function startAi() {
+            document.getElementById('advisory-overlay').style.display = 'none';
+            addThought("UES BOOT SEQUENCE", false);
+            addThought("Establishing neural link with Puter cloud...");
             
-            setTimeout(() => { bar.style.width = '100%'; }, 100);
-            
-            setTimeout(() => {
-                screen.style.opacity = '0';
-                setTimeout(() => {
-                    screen.style.display = 'none';
-                    warning.style.display = 'flex';
-                }, 800);
-            }, 3000);
-        }
-
-        function closeWarning() {
-            document.getElementById('warning-overlay').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('warning-overlay').style.display = 'none';
-                document.getElementById('main-dashboard').classList.add('visible');
-            }, 500);
-        }
-
-        const dbReq = indexedDB.open(DB_NAME, 1);
-        dbReq.onupgradeneeded = e => e.target.result.createObjectStore(OBJ_STORE);
-        dbReq.onsuccess = e => { 
-            db = e.target.result;
-            addLog("System: Handshake confirmed. I/O channels open.");
-        };
-
-        function addLog(msg) {
-            sysLog.textContent = msg;
-        }
-
-        async function engineStep() {
-            if (!active || !db) return;
-
             try {
-                const tx = db.transaction(OBJ_STORE, 'readwrite');
-                const store = tx.objectStore(OBJ_STORE);
-                store.put(dataBlock, 'primary');
-                store.delete('primary');
-
-                if (ramHold.length > 3) ramHold.shift();
-                ramHold.push(new Uint8Array(dataBlock.length / 8).fill(Math.random() * 255));
-
-                if (active) {
-                    setTimeout(() => requestAnimationFrame(engineStep), Math.random() * 5);
+                if (!puter.auth.isSignedIn()) {
+                    addThought("Authorization required for autonomous balancing. Please sign in.");
+                    await puter.auth.signIn();
                 }
-            } catch (e) {
-                setTimeout(engineStep, 100);
+                
+                const user = await puter.auth.getUser();
+                addThought(`Authenticated: ${user.username}.`);
+                
+                systemStats = {
+                    cores: navigator.hardwareConcurrency || 4,
+                    memory: navigator.deviceMemory || 4,
+                    platform: navigator.platform
+                };
+
+                document.getElementById('cpu-stat').innerText = systemStats.cores;
+                addThought("UES PROFILING", false);
+                const analysisResponse = await puter.ai.chat(
+                    `The system has ${systemStats.cores} cores and ${systemStats.memory}GB RAM. 
+                    In 4 words, describe how the AI should balance the allocation for maximum extension freezing.`
+                );
+                addThought(analysisResponse);
+                
+                engineStatus.innerText = "STANDBY";
+                statusInd.classList.replace('bg-red-500', 'bg-emerald-400');
+                btnText.innerText = "Activate UES AI";
+
+            } catch (err) {
+                addThought("Boot failed. Cloud connection unstable.");
+                console.error(err);
             }
         }
 
-        let pts = Array(80).fill(0);
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById('start-init-btn').onclick = startAi;
+
+        // The Heart of UES: Autonomous Balancing
+        async function runAutonomousBalancing() {
+            if (!running) return;
+
+            // Analyze latency: If latency is high (> 50ms), reduce target. If low, increase.
+            let adjustment = 0;
+            if (currentLatency > 40) {
+                adjustment = -150;
+                addThought("Detecting system lag. Reducing allocation to prevent crash.");
+            } else if (currentLatency < 15) {
+                adjustment = 100;
+                addThought("System stable. Increasing allocation to freeze background apps.");
+            }
+
+            power = Math.max(200, Math.min(4000, parseInt(power) + adjustment));
+            slider.value = power;
+            pValDisplay.innerHTML = `${power}<span class="text-lg text-zinc-600 font-light">MB</span>`;
+
+            // Every few cycles, get an AI "Check-in"
+            if (Math.random() > 0.97) {
+                try {
+                    const aiAdvice = await puter.ai.chat(
+                        `Latency: ${currentLatency}ms. Allocation: ${power}MB. 
+                        Give a short status report in simple English for the user.`
+                    );
+                    addThought(aiAdvice);
+                } catch(e) {}
+            }
+        }
+
+        async function engineLoop() {
+            if (!running) return;
+
+            // Resource allocation logic
+            if (cycle.length < (power / 100)) {
+                const data = new Uint8Array(1024 * 1024 * 5); // 5MB chunks
+                for(let i=0; i<data.length; i+=8192) data[i] = Math.random() * 255;
+                cycle.push(data);
+            } else if (cycle.length > (power / 100)) {
+                cycle.shift();
+            }
+
+            const start = performance.now();
+            // Intelligent load simulation
+            while (performance.now() - start < 15) {
+                Math.sqrt(Math.random() * 1000000);
+            }
+            const end = performance.now();
+            currentLatency = Math.floor(end - start);
+
+            // Update UI
+            const heap = (cycle.length * 5).toFixed(1);
+            heapVal.innerHTML = `${heap}<span class="text-xs">MB</span>`;
+            latVal.innerHTML = `${currentLatency}<span class="text-xs">ms</span>`;
             
-            ctx.beginPath();
-            ctx.strokeStyle = active ? '#60a5fa' : '#333';
-            ctx.lineWidth = 1;
+            baseStability = Math.min(99.9, 100 - (currentLatency / 2));
+            uesScore.innerText = baseStability.toFixed(1);
 
-            const step = canvas.width / (pts.length - 1);
-            for (let i = 0; i < pts.length; i++) {
-                const x = i * step;
-                const targetH = active ? (20 + Math.random() * 60) : 5;
-                pts[i] += (targetH - pts[i]) * 0.1;
-                
-                const y = canvas.height / 2 + (Math.sin(Date.now() * 0.002 + i * 0.1) * pts[i]);
-                
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
+            const load = Math.min(100, (power / 40) + (currentLatency * 2));
+            loadBar.style.width = `${load}%`;
+            loadText.innerText = `${Math.floor(load)}%`;
+            document.getElementById('thread-val').innerText = `${Math.floor(load * 0.9)}%`;
 
-            if (active) {
-                activityPct.textContent = (85 + Math.random() * 14).toFixed(1);
-            } else {
-                activityPct.textContent = "00.0";
-            }
+            // Adjust colors based on stress
+            if (load > 85) mainContent.style.background = 'rgba(239, 68, 68, 0.02)';
+            else mainContent.style.background = 'transparent';
 
-            requestAnimationFrame(animate);
+            engineInterval = setTimeout(engineLoop, 20);
         }
 
-        loadSlider.oninput = e => {
-            intensity = e.target.value;
-            loadVal.textContent = intensity + "MB";
-        };
+        // Secondary loop for balancing logic (slower than the engine loop)
+        setInterval(runAutonomousBalancing, 3000);
 
         toggleBtn.onclick = () => {
-            active = !active;
-            if (active) {
-                dataBlock = new Uint8Array(1024 * 1024 * intensity).fill(1);
-                toggleBtn.textContent = "Suspend Engine";
-                toggleBtn.classList.add('active');
-                statusText.textContent = "Optimizing Performance";
-                statusText.style.color = "var(--primary-blue)";
-                mCore.textContent = "High";
-                mIO.textContent = "Active";
-                mRam.textContent = "Saturated";
-                addLog(`Engine: Allocating ${intensity}MB to foreground priority.`);
-                engineStep();
-            } else {
-                toggleBtn.textContent = "Initialize Engine";
-                toggleBtn.classList.remove('active');
-                statusText.textContent = "Standby Mode";
-                statusText.style.color = "var(--text-dim)";
-                mCore.textContent = "Standard";
-                mIO.textContent = "Idle";
-                mRam.textContent = "Passive";
-                ramHold = [];
-                dataBlock = null;
-                addLog("System: Engine suspended. Resources released.");
+            if (engineStatus.innerText === "OFFLINE") {
+                addThought("AI not initialized. Trigger boot sequence first.");
+                return;
             }
-        };
 
-        function resize() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-        }
-
-        window.onresize = resize;
-        window.onload = () => {
-            resize();
-            animate();
-            startLoading();
+            running = !running;
+            if (running) {
+                btnText.innerText = "Emergency Stop";
+                toggleBtn.classList.remove('bg-emerald-500', 'btn-pulse');
+                toggleBtn.classList.add('bg-red-600', 'text-white');
+                engineStatus.innerText = "ACTIVE";
+                mainContent.classList.add('ai-active-glow');
+                
+                addThought("UES AI Engine engaged. Autonomous balancing online.");
+                addThought("Starting environment saturation...");
+                
+                engineLoop();
+            } else {
+                btnText.innerText = "Activate UES AI";
+                toggleBtn.classList.add('bg-emerald-500', 'btn-pulse');
+                toggleBtn.classList.remove('bg-red-600', 'text-white');
+                engineStatus.innerText = "STANDBY";
+                mainContent.classList.remove('ai-active-glow');
+                
+                addThought("Powering down UES. Resources returned to system.");
+                
+                clearTimeout(engineInterval);
+                cycle = [];
+                heapVal.innerHTML = `0.0<span class="text-xs">MB</span>`;
+                loadBar.style.width = '0%';
+                loadText.innerText = '0%';
+                pValDisplay.innerHTML = `0<span class="text-lg text-zinc-600 font-light">MB</span>`;
+            }
         };
     </script>
 </body>
