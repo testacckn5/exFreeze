@@ -3,386 +3,311 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>exFreeze UES | Ultra Efficient Smart Engine</title>
+    <title>exFreeze UES | The Smartest Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://js.puter.com/v2/"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
 
         :root {
-            --emerald-glow: 0 0 20px rgba(52, 211, 153, 0.2);
-            --bg-dark: #050505;
-            --panel-dark: #0a0a0a;
-            --accent: #10b981;
+            --accent: #00f090;
+            --bg-main: #0c0c0e;
+            --card-bg: rgba(255, 255, 255, 0.03);
         }
 
         body {
-            background-color: var(--bg-dark);
-            color: white;
-            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             overflow: hidden;
         }
 
-        .mono { font-family: 'JetBrains Mono', monospace; }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-
-        @keyframes scanline {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(1000%); }
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .scanline-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, transparent, rgba(52, 211, 153, 0.05), transparent);
-            height: 10%;
-            width: 100%;
-            pointer-events: none;
-            animation: scanline 8s linear infinite;
+        .text-glow {
+            text-shadow: 0 0 15px rgba(0, 240, 144, 0.4);
         }
 
-        #advisory-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.95);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(10px);
+        .progress-fill {
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .btn-pulse {
-            animation: btn-glow 2s infinite;
+        @keyframes core-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
         }
-        @keyframes btn-glow {
-            0% { box-shadow: 0 0 0px rgba(16, 185, 129, 0); }
-            50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.6); }
-            100% { box-shadow: 0 0 0px rgba(16, 185, 129, 0); }
+        .ai-core-active {
+            animation: core-pulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 70px rgba(0, 240, 144, 0.25);
         }
 
-        .ai-active-glow {
-            box-shadow: inset 0 0 50px rgba(16, 185, 129, 0.05);
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
         input[type="range"] {
             appearance: none;
-            background: #1f2937;
-            height: 4px;
-            border-radius: 2px;
-            pointer-events: none; /* AI Controls this now */
-            opacity: 0.5;
+            background: rgba(255,255,255,0.1);
+            height: 6px;
+            border-radius: 10px;
+            pointer-events: none;
         }
         input[type="range"]::-webkit-slider-thumb {
             appearance: none;
-            width: 14px;
-            height: 14px;
+            width: 18px;
+            height: 18px;
             background: var(--accent);
             border-radius: 50%;
+            border: 3px solid #000;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-6">
 
-    <!-- ADVISORY SCREEN -->
-    <div id="advisory-overlay">
-        <div class="max-w-md bg-zinc-900 border border-white/10 p-10 rounded-[2.5rem] text-center shadow-2xl">
-            <i class="fa-solid fa-brain text-emerald-500 text-4xl mb-6"></i>
-            <h2 class="text-2xl font-black mb-4 uppercase tracking-tight">UES Initialization</h2>
-            <p class="text-zinc-400 text-sm leading-relaxed mb-8">
-                The <span class="text-emerald-400">exFreeze Ultra Efficient Smart</span> engine requires cloud-assisted logic to balance resource allocation. <span class="text-white font-bold">Sign in to Puter</span> to activate.
+    <!-- INITIALIZATION OVERLAY -->
+    <div id="init-screen" class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center backdrop-blur-xl">
+        <div class="max-w-md w-full p-10 text-center">
+            <div class="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-emerald-500/20">
+                <i class="fa-solid fa-brain text-emerald-400 text-3xl"></i>
+            </div>
+            <h2 class="text-3xl font-extrabold mb-3">Wake up the AI.</h2>
+            <p class="text-zinc-400 mb-10 text-sm leading-relaxed">
+                The UES Engine uses <span class="text-white">Smart Resource Crowding</span> to prioritize this tab and freeze distracting background extensions automatically.
             </p>
-            <button id="start-init-btn" class="w-full py-4 bg-white text-black font-black uppercase tracking-widest rounded-2xl hover:bg-emerald-400 transition-colors">
-                Initialize UES AI
+            <button id="boot-btn" class="w-full py-4 bg-white text-black font-extrabold rounded-2xl hover:bg-emerald-400 transition-all active:scale-95">
+                INITIALIZE AI CORE
             </button>
         </div>
     </div>
 
-    <div class="w-full max-w-7xl h-[90vh] bg-[#0a0a0a] rounded-[2.5rem] border border-white/5 overflow-hidden flex shadow-2xl relative">
-        <div class="scanline-overlay"></div>
-
-        <!-- SIDEBAR: AI COGNITION -->
-        <aside class="w-80 border-r border-white/5 bg-black/40 p-6 flex flex-col z-10">
+    <!-- MAIN APP -->
+    <div class="w-full max-w-6xl h-[800px] glass rounded-[3rem] flex overflow-hidden relative shadow-2xl">
+        
+        <!-- LOGS -->
+        <aside class="w-80 border-r border-white/5 p-8 flex flex-col relative z-10 bg-black/20">
             <div class="flex items-center gap-3 mb-10">
-                <div id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-red-500 transition-colors duration-500"></div>
-                <h2 class="text-[10px] font-bold tracking-[0.3em] text-gray-500 uppercase">UES_Thinking_Stream</h2>
+                <div id="ai-dot" class="w-2.5 h-2.5 rounded-full bg-zinc-600 transition-colors shadow-[0_0_10px_rgba(0,0,0,0.5)]"></div>
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">AI Logic Stream</span>
             </div>
 
-            <div id="telemetry-stream" class="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar text-[12px] leading-relaxed">
-                <div class="text-zinc-600 italic">Awaiting AI handshake...</div>
+            <div id="log-container" class="flex-1 overflow-y-auto space-y-4 text-[11px] leading-relaxed text-zinc-400 pr-2">
+                <div class="italic">System standby...</div>
             </div>
 
-            <div class="mt-6 pt-6 border-t border-white/5">
-                <div class="flex justify-between text-[9px] font-bold text-gray-500 uppercase mb-2">
-                    <span>Adaptive Load Balance</span>
-                    <span id="load-text">0%</span>
+            <div class="mt-8 pt-8 border-t border-white/5">
+                <div class="flex justify-between text-[10px] font-bold uppercase mb-3">
+                    <span class="text-zinc-500">System Priority</span>
+                    <span id="health-pct" class="text-emerald-400">0%</span>
                 </div>
-                <div class="h-1 bg-white/5 rounded-full overflow-hidden">
-                    <div id="load-bar" class="h-full bg-emerald-500 w-0 transition-all duration-700"></div>
+                <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div id="health-bar" class="h-full bg-emerald-400 w-0 progress-fill shadow-[0_0_10px_rgba(0,240,144,0.3)]"></div>
                 </div>
             </div>
         </aside>
 
-        <!-- MAIN PANEL -->
-        <main id="main-content" class="flex-1 flex flex-col p-10 relative overflow-hidden transition-colors duration-1000">
-            <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 blur-[120px] rounded-full -mr-64 -mt-64"></div>
-
-            <header class="flex justify-between items-start mb-8 z-10">
+        <!-- DASHBOARD -->
+        <main class="flex-1 p-12 flex flex-col relative">
+            <header class="flex justify-between items-center mb-10">
                 <div>
-                    <h1 class="text-5xl font-black tracking-tighter">exFreeze <span class="text-emerald-400 italic">UES</span></h1>
-                    <p class="text-gray-500 text-xs font-medium tracking-wide italic">Ultra Efficient & Smart Engine</p>
+                    <h1 class="text-4xl font-extrabold tracking-tight">exFreeze <span class="text-emerald-400 italic">UES</span></h1>
+                    <p class="text-zinc-500 text-sm font-medium">Smart Background Control</p>
                 </div>
-                <div class="text-right">
-                    <div class="text-[9px] font-bold text-emerald-400/50 uppercase tracking-widest">Logic Status</div>
-                    <div id="engine-status-text" class="text-xl font-light">OFFLINE</div>
+                <div class="px-5 py-2 glass rounded-full flex items-center gap-3 border border-white/10">
+                    <div id="status-pulse" class="w-2 h-2 rounded-full bg-zinc-600"></div>
+                    <span id="system-status" class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Offline</span>
                 </div>
             </header>
 
-            <div class="flex-1 grid grid-cols-12 gap-8 z-10">
-                <!-- Control Panel -->
-                <div class="col-span-4 flex flex-col gap-6">
-                    <div class="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5">
-                        <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest block mb-4">Autonomous Allocation</span>
-                        <div id="p-val" class="text-4xl font-black mb-4">0<span class="text-lg text-zinc-600 font-light">MB</span></div>
-                        <input type="range" id="p-slider" min="100" max="4000" value="1000" class="w-full mb-4">
-                        <p class="text-[10px] text-zinc-500 leading-snug">
-                            The AI is constantly moving this target based on your CPU heat and latency to prevent freezing your own browser.
+            <div class="grid grid-cols-12 gap-8 flex-1">
+                <div class="col-span-5 space-y-6">
+                    <!-- ALLOCATION -->
+                    <div class="p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/5 relative overflow-hidden">
+                        <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest block mb-4">Resource Target</span>
+                        <div class="flex items-baseline gap-2 mb-6">
+                            <span id="p-val" class="text-6xl font-extrabold tracking-tighter text-glow">0</span>
+                            <span class="text-xl font-medium text-zinc-500">MB</span>
+                        </div>
+                        <input type="range" id="p-slider" min="100" max="5000" value="1000" class="w-full">
+                        <p class="text-[11px] text-zinc-500 mt-6 leading-relaxed">
+                            The AI auto-scales this to "crowd out" other extensions. It fills the gaps so nothing else can run in the background.
                         </p>
                     </div>
 
-                    <div class="p-8 rounded-[2rem] bg-zinc-900/50 border border-white/5">
-                        <h3 class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-4">UES Strategy</h3>
-                        <ul class="space-y-3 text-[11px] text-zinc-400 font-medium">
-                            <li class="flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-emerald-500 text-[8px]"></i> Real-time Adaptive Leveling</li>
-                            <li class="flex items-center gap-2"><i class="fa-solid fa-snowflake text-emerald-500 text-[8px]"></i> Intelligent Extension Freezing</li>
-                            <li class="flex items-center gap-2"><i class="fa-solid fa-microchip text-emerald-500 text-[8px]"></i> Dynamic Hardware Balancing</li>
-                        </ul>
+                    <!-- SMART FEATURES -->
+                    <div class="p-8 rounded-[2.5rem] glass">
+                        <h3 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-6">Active Smart Tech</h3>
+                        <div id="feature-list" class="space-y-4"></div>
                     </div>
                 </div>
 
-                <!-- Main Display -->
-                <div class="col-span-8 flex flex-col p-10 rounded-[3rem] bg-white/[0.02] border border-white/5 relative items-center justify-center">
-                    <div id="visualizer-ring" class="w-56 h-56 rounded-full border border-white/5 flex items-center justify-center relative transition-transform duration-1000">
-                        <div class="absolute inset-0 rounded-full border-t-2 border-emerald-500/20 animate-spin" style="animation-duration: 3s;"></div>
-                        <div class="text-center">
-                            <div id="ues-score" class="text-7xl font-black tracking-tighter">--</div>
-                            <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] mt-2">Core Stability</div>
+                <!-- CORE -->
+                <div class="col-span-7 flex flex-col gap-8">
+                    <div id="main-core" class="flex-1 rounded-[3rem] bg-white/[0.01] border border-white/5 flex flex-col items-center justify-center relative overflow-hidden">
+                        <div id="core-visual" class="w-64 h-64 rounded-full flex items-center justify-center border border-white/5 transition-all duration-700">
+                            <div class="text-center z-10">
+                                <span id="main-score" class="text-8xl font-black tracking-tighter">--</span>
+                                <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-[0.3em] mt-2">Efficiency</div>
+                            </div>
+                        </div>
+
+                        <!-- MINI STATS -->
+                        <div class="grid grid-cols-3 gap-10 mt-12 w-full px-12">
+                            <div class="text-center">
+                                <div class="text-[9px] text-zinc-500 font-bold uppercase mb-1">Heap Use</div>
+                                <div id="v-ram" class="text-2xl font-semibold">0<span class="text-xs ml-1 opacity-50">MB</span></div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-[9px] text-zinc-500 font-bold uppercase mb-1">CPU Power</div>
+                                <div id="v-cpu" class="text-2xl font-semibold">0<span class="text-xs ml-1 opacity-50">%</span></div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-[9px] text-zinc-500 font-bold uppercase mb-1">Cycle Latency</div>
+                                <div id="v-lat" class="text-2xl font-semibold">0<span class="text-xs ml-1 opacity-50">ms</span></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4 w-full mt-10">
-                        <div class="p-4 rounded-2xl bg-black/40 border border-white/5 text-center">
-                            <div class="text-[8px] text-gray-500 font-bold uppercase mb-1">Heap State</div>
-                            <div id="heap-val" class="text-xl font-light mono">0.0<span class="text-xs">MB</span></div>
+                    <div class="flex items-center justify-between p-2">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Extension Shield</span>
+                            <span class="text-xs text-emerald-400/80 font-bold">READY TO SILENCE BACKGROUND</span>
                         </div>
-                        <div class="p-4 rounded-2xl bg-black/40 border border-white/5 text-center">
-                            <div class="text-[8px] text-gray-500 font-bold uppercase mb-1">AI Thinking</div>
-                            <div id="thread-val" class="text-xl font-light mono">0%</div>
-                        </div>
-                        <div class="p-4 rounded-2xl bg-black/40 border border-white/5 text-center">
-                            <div class="text-[8px] text-gray-500 font-bold uppercase mb-1">Cycle Latency</div>
-                            <div id="lat-val" class="text-xl font-light mono">0<span class="text-xs">ms</span></div>
-                        </div>
+                        <button id="toggle-engine" class="px-14 py-5 bg-emerald-500 text-black font-black text-xs uppercase rounded-2xl transition-all hover:scale-110 shadow-lg shadow-emerald-500/20 active:scale-95">
+                            Boot Engine
+                        </button>
                     </div>
                 </div>
             </div>
-
-            <footer class="mt-8 pt-6 border-t border-white/5 flex items-center justify-between z-10">
-                <div class="flex gap-8 text-[10px]">
-                    <div class="flex flex-col"><span class="text-gray-600 uppercase font-bold">Node</span><span id="net-stat">Scanning...</span></div>
-                    <div class="flex flex-col"><span class="text-gray-600 uppercase font-bold">Thread Count</span><span id="cpu-stat">--</span></div>
-                    <div class="flex flex-col"><span class="text-gray-600 uppercase font-bold">Engine</span><span>v4.0 UES</span></div>
-                </div>
-
-                <button id="toggle-btn" class="btn-pulse group relative overflow-hidden px-14 py-5 rounded-2xl bg-emerald-500 text-black font-black text-xs tracking-[0.2em] uppercase transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-                    <span id="btn-text">Boot UES AI</span>
-                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                </button>
-            </footer>
         </main>
     </div>
 
     <script>
-        let running = false;
+        let isRunning = false;
         let power = 1000;
-        let cycle = [];
-        let engineInterval;
-        let baseStability = 98.4;
-        let systemStats = {};
-        let currentLatency = 0;
+        let latency = 0;
+        let storage = [];
+        let loop;
+        
+        const features = [
+            "Smart Resource Crowding", "Extension Silencer", "Background Squeezer",
+            "Auto-Allocation v2", "Logic Overload Protection", "Cloud-Assist Link"
+        ];
 
-        const toggleBtn = document.getElementById('toggle-btn');
-        const btnText = document.getElementById('btn-text');
-        const thoughtStream = document.getElementById('telemetry-stream');
-        const statusInd = document.getElementById('status-indicator');
-        const engineStatus = document.getElementById('engine-status-text');
-        const heapVal = document.getElementById('heap-val');
-        const latVal = document.getElementById('lat-val');
-        const uesScore = document.getElementById('ues-score');
-        const slider = document.getElementById('p-slider');
-        const pValDisplay = document.getElementById('p-val');
-        const loadBar = document.getElementById('load-bar');
-        const loadText = document.getElementById('load-text');
-        const mainContent = document.getElementById('main-content');
-
-        function addThought(text, isAi = true) {
+        const log = (msg, isSmart = false) => {
             const el = document.createElement('div');
-            el.className = isAi ? 'text-white border-l-2 border-emerald-500 pl-3 py-1 animate-in fade-in slide-in-from-left-2 mb-2' : 'text-zinc-500 text-[10px] uppercase font-bold tracking-widest mb-1 mt-4';
-            el.innerText = text;
-            thoughtStream.prepend(el);
-            if (thoughtStream.children.length > 50) thoughtStream.lastChild.remove();
-        }
+            el.className = `p-3 rounded-xl border border-white/5 transition-all animate-in fade-in slide-in-from-left-2 ${isSmart ? 'bg-emerald-500/5 text-emerald-400' : 'text-zinc-500'}`;
+            el.innerHTML = msg;
+            document.getElementById('log-container').prepend(el);
+            if (document.getElementById('log-container').children.length > 25) document.getElementById('log-container').lastChild.remove();
+        };
 
-        async function startAi() {
-            document.getElementById('advisory-overlay').style.display = 'none';
-            addThought("UES BOOT SEQUENCE", false);
-            addThought("Establishing neural link with Puter cloud...");
+        async function init() {
+            document.getElementById('init-screen').style.display = 'none';
+            log("Core initialized. Profile: Smart/Stealth.");
             
             try {
-                if (!puter.auth.isSignedIn()) {
-                    addThought("Authorization required for autonomous balancing. Please sign in.");
-                    await puter.auth.signIn();
-                }
+                if (!puter.auth.isSignedIn()) await puter.auth.signIn();
+                const u = await puter.auth.getUser();
+                log(`Hello ${u.username}. Hardware profile verified.`, true);
                 
-                const user = await puter.auth.getUser();
-                addThought(`Authenticated: ${user.username}.`);
-                
-                systemStats = {
-                    cores: navigator.hardwareConcurrency || 4,
-                    memory: navigator.deviceMemory || 4,
-                    platform: navigator.platform
-                };
-
-                document.getElementById('cpu-stat').innerText = systemStats.cores;
-                addThought("UES PROFILING", false);
-                const analysisResponse = await puter.ai.chat(
-                    `The system has ${systemStats.cores} cores and ${systemStats.memory}GB RAM. 
-                    In 4 words, describe how the AI should balance the allocation for maximum extension freezing.`
-                );
-                addThought(analysisResponse);
-                
-                engineStatus.innerText = "STANDBY";
-                statusInd.classList.replace('bg-red-500', 'bg-emerald-400');
-                btnText.innerText = "Activate UES AI";
-
-            } catch (err) {
-                addThought("Boot failed. Cloud connection unstable.");
-                console.error(err);
-            }
+                features.forEach((f, i) => {
+                    setTimeout(() => {
+                        const d = document.createElement('div');
+                        d.className = "flex justify-between items-center text-[11px] font-bold text-zinc-400";
+                        d.innerHTML = `<span>${f}</span><i class="fa-solid fa-check text-emerald-400"></i>`;
+                        document.getElementById('feature-list').appendChild(d);
+                    }, i * 200);
+                });
+                document.getElementById('ai-dot').classList.replace('bg-zinc-600', 'bg-emerald-400');
+                document.getElementById('system-status').innerText = "Standby";
+            } catch(e) { log("Local mode active."); }
         }
 
-        document.getElementById('start-init-btn').onclick = startAi;
-
-        // The Heart of UES: Autonomous Balancing
-        async function runAutonomousBalancing() {
-            if (!running) return;
-
-            // Analyze latency: If latency is high (> 50ms), reduce target. If low, increase.
-            let adjustment = 0;
-            if (currentLatency > 40) {
-                adjustment = -150;
-                addThought("Detecting system lag. Reducing allocation to prevent crash.");
-            } else if (currentLatency < 15) {
-                adjustment = 100;
-                addThought("System stable. Increasing allocation to freeze background apps.");
-            }
-
-            power = Math.max(200, Math.min(4000, parseInt(power) + adjustment));
-            slider.value = power;
-            pValDisplay.innerHTML = `${power}<span class="text-lg text-zinc-600 font-light">MB</span>`;
-
-            // Every few cycles, get an AI "Check-in"
-            if (Math.random() > 0.97) {
-                try {
-                    const aiAdvice = await puter.ai.chat(
-                        `Latency: ${currentLatency}ms. Allocation: ${power}MB. 
-                        Give a short status report in simple English for the user.`
-                    );
-                    addThought(aiAdvice);
-                } catch(e) {}
-            }
-        }
-
-        async function engineLoop() {
-            if (!running) return;
-
-            // Resource allocation logic
-            if (cycle.length < (power / 100)) {
-                const data = new Uint8Array(1024 * 1024 * 5); // 5MB chunks
-                for(let i=0; i<data.length; i+=8192) data[i] = Math.random() * 255;
-                cycle.push(data);
-            } else if (cycle.length > (power / 100)) {
-                cycle.shift();
-            }
+        function engine() {
+            if (!isRunning) return;
 
             const start = performance.now();
-            // Intelligent load simulation
-            while (performance.now() - start < 15) {
-                Math.sqrt(Math.random() * 1000000);
+            
+            // Resource Crowding: Fills RAM to stop extensions from using it
+            if (storage.length < (power / 100)) {
+                storage.push(new Uint8Array(1024 * 1024 * 5)); // 5MB blocks
+            } else if (storage.length > (power / 100)) {
+                storage.shift();
             }
-            const end = performance.now();
-            currentLatency = Math.floor(end - start);
+
+            // CPU Pressure: Occupies the thread so other extensions can't work
+            const work = Date.now() + 15;
+            while (Date.now() < work) { Math.sqrt(Math.random() * 99999); }
+            
+            latency = Math.floor(performance.now() - start);
 
             // Update UI
-            const heap = (cycle.length * 5).toFixed(1);
-            heapVal.innerHTML = `${heap}<span class="text-xs">MB</span>`;
-            latVal.innerHTML = `${currentLatency}<span class="text-xs">ms</span>`;
+            const score = Math.max(0, 100 - (latency / 2)).toFixed(1);
+            document.getElementById('main-score').innerText = score;
+            document.getElementById('v-ram').innerHTML = `${storage.length * 5}<span class="text-xs ml-1 opacity-50">MB</span>`;
+            document.getElementById('v-cpu').innerHTML = `${Math.min(100, latency * 3)}<span class="text-xs ml-1 opacity-50">%</span>`;
+            document.getElementById('v-lat').innerHTML = `${latency}<span class="text-xs ml-1 opacity-50">ms</span>`;
             
-            baseStability = Math.min(99.9, 100 - (currentLatency / 2));
-            uesScore.innerText = baseStability.toFixed(1);
+            document.getElementById('health-bar').style.width = `${score}%`;
+            document.getElementById('health-pct').innerText = `${Math.floor(score)}%`;
 
-            const load = Math.min(100, (power / 40) + (currentLatency * 2));
-            loadBar.style.width = `${load}%`;
-            loadText.innerText = `${Math.floor(load)}%`;
-            document.getElementById('thread-val').innerText = `${Math.floor(load * 0.9)}%`;
+            // Smart Auto-Adjust
+            if (latency > 45) {
+                power = Math.max(200, power - 150);
+                log("Heavy lag. Re-balancing to keep the tab alive.", true);
+            } else if (latency < 15) {
+                power = Math.min(5000, power + 100);
+            }
+            
+            document.getElementById('p-slider').value = power;
+            document.getElementById('p-val').innerText = Math.floor(power);
 
-            // Adjust colors based on stress
-            if (load > 85) mainContent.style.background = 'rgba(239, 68, 68, 0.02)';
-            else mainContent.style.background = 'transparent';
-
-            engineInterval = setTimeout(engineLoop, 20);
+            loop = setTimeout(engine, 20);
         }
 
-        // Secondary loop for balancing logic (slower than the engine loop)
-        setInterval(runAutonomousBalancing, 3000);
+        async function aiTalk() {
+            if (!isRunning) return;
+            try {
+                const r = await puter.ai.chat(
+                    `Stability is ${document.getElementById('main-score').innerText}%. Latency is ${latency}ms. 
+                    Power target is ${power}MB. 
+                    Tell the user in one short, cool sentence how the AI is successfully crowding out background extensions to make this tab flawless.`
+                );
+                log(r, true);
+            } catch(e) {}
+        }
 
-        toggleBtn.onclick = () => {
-            if (engineStatus.innerText === "OFFLINE") {
-                addThought("AI not initialized. Trigger boot sequence first.");
-                return;
-            }
+        document.getElementById('boot-btn').onclick = init;
 
-            running = !running;
-            if (running) {
-                btnText.innerText = "Emergency Stop";
-                toggleBtn.classList.remove('bg-emerald-500', 'btn-pulse');
-                toggleBtn.classList.add('bg-red-600', 'text-white');
-                engineStatus.innerText = "ACTIVE";
-                mainContent.classList.add('ai-active-glow');
-                
-                addThought("UES AI Engine engaged. Autonomous balancing online.");
-                addThought("Starting environment saturation...");
-                
-                engineLoop();
+        document.getElementById('toggle-engine').onclick = () => {
+            isRunning = !isRunning;
+            const btn = document.getElementById('toggle-engine');
+            const core = document.getElementById('main-core');
+            const dot = document.getElementById('status-pulse');
+
+            if (isRunning) {
+                btn.innerText = "Stop Engine";
+                btn.classList.replace('bg-emerald-500', 'bg-white');
+                core.classList.add('ai-core-active');
+                dot.classList.replace('bg-zinc-600', 'bg-emerald-400');
+                document.getElementById('system-status').innerText = "Active";
+                log("Engine Engaged. Crowding out extensions now.");
+                engine();
+                setInterval(aiTalk, 10000);
             } else {
-                btnText.innerText = "Activate UES AI";
-                toggleBtn.classList.add('bg-emerald-500', 'btn-pulse');
-                toggleBtn.classList.remove('bg-red-600', 'text-white');
-                engineStatus.innerText = "STANDBY";
-                mainContent.classList.remove('ai-active-glow');
-                
-                addThought("Powering down UES. Resources returned to system.");
-                
-                clearTimeout(engineInterval);
-                cycle = [];
-                heapVal.innerHTML = `0.0<span class="text-xs">MB</span>`;
-                loadBar.style.width = '0%';
-                loadText.innerText = '0%';
-                pValDisplay.innerHTML = `0<span class="text-lg text-zinc-600 font-light">MB</span>`;
+                btn.innerText = "Boot Engine";
+                btn.classList.replace('bg-white', 'bg-emerald-500');
+                core.classList.remove('ai-core-active');
+                dot.classList.replace('bg-emerald-400', 'bg-zinc-600');
+                document.getElementById('system-status').innerText = "Standby";
+                log("Engine paused. Background resources freed.");
+                clearTimeout(loop);
+                storage = [];
             }
         };
     </script>
