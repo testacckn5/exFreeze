@@ -85,10 +85,8 @@
         </div>
     </div>
 
-    <!-- MAIN APP -->
     <div class="w-full max-w-6xl h-[800px] glass rounded-[3rem] flex overflow-hidden relative shadow-2xl">
         
-        <!-- LOGS -->
         <aside class="w-80 border-r border-white/5 p-8 flex flex-col relative z-10 bg-black/20">
             <div class="flex items-center gap-3 mb-10">
                 <div id="ai-dot" class="w-2.5 h-2.5 rounded-full bg-zinc-600 transition-colors shadow-[0_0_10px_rgba(0,0,0,0.5)]"></div>
@@ -233,14 +231,12 @@
 
             const start = performance.now();
             
-            // Resource Crowding: Fills RAM to stop extensions from using it
             if (storage.length < (power / 100)) {
                 storage.push(new Uint8Array(1024 * 1024 * 5)); // 5MB blocks
             } else if (storage.length > (power / 100)) {
                 storage.shift();
             }
 
-            // CPU Pressure: Occupies the thread so other extensions can't work
             const work = Date.now() + 15;
             while (Date.now() < work) { Math.sqrt(Math.random() * 99999); }
             
